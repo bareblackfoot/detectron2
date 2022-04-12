@@ -27,6 +27,9 @@ from detectron2.utils.logger import setup_logger
 setup_logger()
 from detectron2.data.datasets import register_coco_instances, load_coco_json
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--visualize", type=bool, default=True)
+args = parser.parse_args()
 
 """
 Train
@@ -59,39 +62,37 @@ cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for t
 """
 Visualize Input
 """
-
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+test_dataset_dicts = load_coco_json(os.path.join("/home/blackfoot/codes/Object-Graph-Memory/data/gibson_tiny_detect/instances_val.json"),
+                                    image_root="/home/blackfoot/codes/Object-Graph-Memory/data/gibson_tiny_detect/val",
+                dataset_name="gibson_tiny_detect_val", extra_annotation_keys=None)
 json_file = os.path.join("/home/blackfoot/codes/Object-Graph-Memory/data/gibson_tiny_detect/instances_val.json")
 with open(json_file) as f:
     imgs_data = json.load(f)
-# imgs_anns = imgs_data['images'][:10]
-# bbox_anns = imgs_data['annotations']
 categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['categories']))]
 train_dataset_metadata.set(thing_classes=categories)
 val_dataset_metadata.set(thing_classes=categories)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
-test_dataset_dicts = load_coco_json(os.path.join("/home/blackfoot/codes/Object-Graph-Memory/data/gibson_tiny_detect/instances_val.json"),
-                                    image_root="/home/blackfoot/codes/Object-Graph-Memory/data/gibson_tiny_detect/val",
-                dataset_name="gibson_tiny_detect_val", extra_annotation_keys=None)
 
-predictor = DefaultPredictor(cfg)
-for d in random.sample(test_dataset_dicts, 3):
-    im = cv2.imread(os.path.join("/home/blackfoot/codes/Object-Graph-Memory/data/gibson_tiny_detect/val", d["file_name"]))
-    outputs = predictor(im)
-    v = Visualizer(im[:, :, ::-1],
-                   metadata=train_dataset_metadata,
-                   scale=0.5,
-                   instance_mode=ColorMode.IMAGE_BW
-                   )
-    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    img = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_RGBA2RGB)
-    plt.imshow(img)
-    plt.show()
-    visualizer = Visualizer(im[:, :, ::-1], metadata=train_dataset_metadata, scale=0.5)
-    out = visualizer.draw_dataset_dict(d)
-    img = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_RGBA2RGB)
-    plt.imshow(img)
-    plt.show()
+if args.visualize:
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+    predictor = DefaultPredictor(cfg)
+    for d in random.sample(test_dataset_dicts, 3):
+        im = cv2.imread(os.path.join("/home/blackfoot/codes/Object-Graph-Memory/data/gibson_tiny_detect/val", d["file_name"]))
+        outputs = predictor(im)
+        v = Visualizer(im[:, :, ::-1],
+                       metadata=train_dataset_metadata,
+                       scale=0.5,
+                       instance_mode=ColorMode.IMAGE_BW
+                       )
+        out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+        img = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_RGBA2RGB)
+        plt.imshow(img)
+        plt.show()
+        visualizer = Visualizer(im[:, :, ::-1], metadata=train_dataset_metadata, scale=0.5)
+        out = visualizer.draw_dataset_dict(d)
+        img = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_RGBA2RGB)
+        plt.imshow(img)
+        plt.show()
 
 """
 Test Before Finetuning
@@ -119,6 +120,14 @@ cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
 predictor = DefaultPredictor(cfg)
 
 """
+Test After Finetuning
+"""
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
+evaluator = COCOEvaluator("gibson_tiny_detect_val", cfg, False, output_dir="./output/")
+val_loader = build_detection_test_loader(cfg, "gibson_tiny_detect_val")
+inference_on_dataset(predictor.model, val_loader, evaluator)
+
+"""
 Visualize Output
 """
 for d in random.sample(test_dataset_dicts, 3):
@@ -131,14 +140,8 @@ for d in random.sample(test_dataset_dicts, 3):
                    )
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
     img = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_RGBA2RGB)
-    plt.imshow(img)
-    plt.show()
-    # plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), d["file_name"]), img)
+    if args.visualize:
+        plt.imshow(img)
+        plt.show()
+    plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), d["file_name"]), img)
 
-"""
-Test After Finetuning
-"""
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
-evaluator = COCOEvaluator("gibson_tiny_detect_val", cfg, False, output_dir="./output/")
-val_loader = build_detection_test_loader(cfg, "gibson_tiny_detect_val")
-inference_on_dataset(trainer.model, val_loader, evaluator)
