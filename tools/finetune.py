@@ -15,7 +15,7 @@ setup_logger()
 from detectron2.data.datasets import register_coco_instances, load_coco_json
 aa = os.getcwd()
 if "PYTHONPATH" not in os.environ:
-    os.environ["PYTHONPATH"] = []
+    os.environ["PYTHONPATH"] = ""
 os.environ["PYTHONPATH"] += ":" + aa
 os.environ["PYTHONPATH"] += ":" + "/".join(aa.split("/")[:-1])
 
