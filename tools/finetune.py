@@ -1,27 +1,14 @@
 from detectron2.engine import DefaultTrainer
-import logging
-import os
-from collections import OrderedDict
-
-import detectron2.utils.comm as comm
-from detectron2.checkpoint import DetectionCheckpointer
-from detectron2.config import get_cfg
-from detectron2.data import MetadataCatalog
 from detectron2.utils.visualizer import ColorMode
 from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-# from detectron2.modeling import GeneralizedRCNNWithTTA
-# import detectron2
-# import some common libraries
-import numpy as np
 import os, json, cv2, random
-# import some common detectron2 utilities
+import argparse
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
-from detectron2.structures import BoxMode
 import matplotlib.pyplot as plt
 from detectron2.utils.logger import setup_logger
 setup_logger()
