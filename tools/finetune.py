@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 from detectron2.utils.logger import setup_logger
 setup_logger()
 from detectron2.data.datasets import register_coco_instances, load_coco_json
+aa = os.getcwd()
+os.environ["PYTHONPATH"] += ":" + aa
+os.environ["PYTHONPATH"] += ":" + "/".join(aa.split("/")[:-1])
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--visualize", type=bool, default=True)
