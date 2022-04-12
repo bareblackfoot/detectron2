@@ -256,10 +256,10 @@ def get_detection_dataset_dicts(
     dataset_dicts = list(itertools.chain.from_iterable(dataset_dicts))
 
     has_instances = "annotations" in dataset_dicts[0]
-    if filter_empty and has_instances:
-        dataset_dicts = filter_images_with_only_crowd_annotations(dataset_dicts)
-    if min_keypoints > 0 and has_instances:
-        dataset_dicts = filter_images_with_few_keypoints(dataset_dicts, min_keypoints)
+    # if filter_empty and has_instances:
+    #     dataset_dicts = filter_images_with_only_crowd_annotations(dataset_dicts)
+    # if min_keypoints > 0 and has_instances:
+    #     dataset_dicts = filter_images_with_few_keypoints(dataset_dicts, min_keypoints)
 
     if check_consistency and has_instances:
         try:

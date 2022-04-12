@@ -261,25 +261,28 @@ class COCOEvaluator(DatasetEvaluator):
             )
         )
         for task in sorted(tasks):
-            assert task in {"bbox", "segm", "keypoints"}, f"Got unknown task: {task}!"
-            coco_eval = (
-                _evaluate_predictions_on_coco(
-                    self._coco_api,
-                    coco_results,
-                    task,
-                    kpt_oks_sigmas=self._kpt_oks_sigmas,
-                    use_fast_impl=self._use_fast_impl,
-                    img_ids=img_ids,
-                    max_dets_per_image=self._max_dets_per_image,
+            try:
+                assert task in {"bbox", "segm", "keypoints"}, f"Got unknown task: {task}!"
+                coco_eval = (
+                    _evaluate_predictions_on_coco(
+                        self._coco_api,
+                        coco_results,
+                        task,
+                        kpt_oks_sigmas=self._kpt_oks_sigmas,
+                        use_fast_impl=self._use_fast_impl,
+                        img_ids=img_ids,
+                        max_dets_per_image=self._max_dets_per_image,
+                    )
+                    if len(coco_results) > 0
+                    else None  # cocoapi does not handle empty results very well
                 )
-                if len(coco_results) > 0
-                else None  # cocoapi does not handle empty results very well
-            )
 
-            res = self._derive_coco_results(
-                coco_eval, task, class_names=self._metadata.get("thing_classes")
-            )
-            self._results[task] = res
+                res = self._derive_coco_results(
+                    coco_eval, task, class_names=self._metadata.get("thing_classes")
+                )
+                self._results[task] = res
+            except:
+                pass
 
     def _eval_box_proposals(self, predictions):
         """

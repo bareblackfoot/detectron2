@@ -740,8 +740,8 @@ class StandardROIHeads(ROIHeads):
             # Usually the original proposals used by the box head are used by the mask, keypoint
             # heads. But when `self.train_on_pred_boxes is True`, proposals will contain boxes
             # predicted by the box head.
-            losses.update(self._forward_mask(features, proposals))
-            losses.update(self._forward_keypoint(features, proposals))
+            # losses.update(self._forward_mask(features, proposals))
+            # losses.update(self._forward_keypoint(features, proposals))
             return proposals, losses
         else:
             pred_instances = self._forward_box(features, proposals)
