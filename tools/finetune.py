@@ -1,18 +1,18 @@
-from detectron2.engine import DefaultTrainer
-from detectron2.utils.visualizer import ColorMode
-from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+from ..detectron2.engine import DefaultTrainer
+from ..detectron2.utils.visualizer import ColorMode
+from ..detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
+from ..detectron2.evaluation import COCOEvaluator, inference_on_dataset
 import os, json, cv2, random
 import argparse
-from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor
-from detectron2.config import get_cfg
-from detectron2.utils.visualizer import Visualizer
-from detectron2.data import MetadataCatalog, DatasetCatalog
+from ..detectron2 import model_zoo
+from ..detectron2.engine import DefaultPredictor
+from ..detectron2.config import get_cfg
+from ..detectron2.utils.visualizer import Visualizer
+from ..detectron2.data import MetadataCatalog, DatasetCatalog
 import matplotlib.pyplot as plt
-from detectron2.utils.logger import setup_logger
+from ..detectron2.utils.logger import setup_logger
 setup_logger()
-from detectron2.data.datasets import register_coco_instances, load_coco_json
+from ..detectron2.data.datasets import register_coco_instances, load_coco_json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--visualize", type=bool, default=True)
