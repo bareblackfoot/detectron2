@@ -18,6 +18,7 @@ if "PYTHONPATH" not in os.environ:
     os.environ["PYTHONPATH"] = ""
 os.environ["PYTHONPATH"] += ":" + aa
 os.environ["PYTHONPATH"] += ":" + "/".join(aa.split("/")[:-1])
+os.environ["PYTHONUNBUFFERED"] = 1
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--visualize", type=bool, default=False)
