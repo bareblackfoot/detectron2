@@ -79,7 +79,7 @@ categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['c
 train_dataset_metadata.set(thing_classes=categories)
 val_dataset_metadata.set(thing_classes=categories)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
-cfg.OUTPUT = os.path.join(cfg.OUTPUT, args.dataset)
+cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset)
 
 if args.visualize:
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
