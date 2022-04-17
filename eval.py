@@ -48,11 +48,11 @@ cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rc
 cfg.DATASETS.TRAIN = (f"{args.dataset}_detect_train",)
 cfg.DATASETS.TEST = (f"{args.dataset}_detect_val",)
 cfg.DATALOADER.NUM_WORKERS = 4
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
-cfg.SOLVER.IMS_PER_BATCH = 32
-cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
-cfg.SOLVER.MAX_ITER = 180000
-cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
+# cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
+# cfg.SOLVER.IMS_PER_BATCH = 32
+# cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
+# cfg.SOLVER.MAX_ITER = 180000
+# cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
   # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
@@ -79,10 +79,11 @@ Test
 ckpts = [os.path.join(cfg.OUTPUT_DIR, x) for x in sorted(os.listdir(cfg.OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
 ckpts.reverse()
 last_ckpt = ckpts[0]
+# last_ckpt = os.path.join(cfg.OUTPUT_DIR, "model_0019999.pth")
 
 
 print('start evaluate {} '.format(last_ckpt))
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.01
 cfg.MODEL.WEIGHTS = last_ckpt
 predictor = DefaultPredictor(cfg)
 evaluator = COCOEvaluator(f"{args.dataset}_detect_val", cfg, False, output_dir="./output/")
@@ -114,5 +115,5 @@ for d in random.sample(test_dataset_dicts, 3):
     plt.imshow(img)
     plt.show()
 
-    plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), d["file_name"]), img)
+    # plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), args.dataset, d["file_name"]), img)
 
