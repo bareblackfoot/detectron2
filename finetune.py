@@ -61,7 +61,7 @@ cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
 cfg.SOLVER.MAX_ITER = 120000
 cfg.SOLVER.STEPS = [80000, 100000]        # do not decay learning rate
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
-cfg.OUTPUT = os.path.join(cfg.OUTPUT, args.dataset)
+cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset)
   # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
 
@@ -79,7 +79,7 @@ categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['c
 train_dataset_metadata.set(thing_classes=categories)
 val_dataset_metadata.set(thing_classes=categories)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
-cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset)
+# cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset)
 
 if args.visualize:
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
