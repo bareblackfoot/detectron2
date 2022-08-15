@@ -56,7 +56,7 @@ cfg.DATALOADER.NUM_WORKERS = 4
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
   # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
-
+cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset)
 
 """
 Visualize Input
@@ -70,6 +70,30 @@ with open(json_file) as f:
 categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['categories']))]
 val_dataset_metadata.set(thing_classes=categories)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
+# cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+# cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
+# predictor = DefaultPredictor(cfg)
+for d in random.sample(test_dataset_dicts, 10):
+    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val", d["file_name"]))
+    im = im[:,:,::-1]
+    # outputs = predictor(im)
+    # v = Visualizer(im,  # [:, :, ::-1],
+    #                metadata=val_dataset_metadata,
+    #                scale=2.0,
+    #                instance_mode=ColorMode.IMAGE_BW
+    #                )
+    # out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+    # img = cv2.cvtColor(out.get_image(),  # [:, :, ::-1],
+    #                    cv2.COLOR_RGBA2RGB)
+    # plt.imshow(img)
+    # plt.show()
+    visualizer = Visualizer(im,  # [:, :, ::-1],
+                            metadata=val_dataset_metadata, scale=2.0)
+    out = visualizer.draw_dataset_dict(d)
+    img = cv2.cvtColor(out.get_image(),  # [:, :, ::-1],
+                       cv2.COLOR_RGBA2RGB)
+    plt.imshow(img)
+    plt.show()
 
 """
 Test
@@ -79,21 +103,23 @@ Test
 ckpts = [os.path.join(cfg.OUTPUT_DIR, x) for x in sorted(os.listdir(cfg.OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
 ckpts.reverse()
 last_ckpt = ckpts[0]
-# last_ckpt = os.path.join(cfg.OUTPUT_DIR, "model_0019999.pth")
-
+# if args.dataset == "mp3d":
+#     last_ckpt = os.path.join(cfg.OUTPUT_DIR, "model_0094999.pth")
 
 print('start evaluate {} '.format(last_ckpt))
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.01
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
 cfg.MODEL.WEIGHTS = last_ckpt
 predictor = DefaultPredictor(cfg)
-evaluator = COCOEvaluator(f"{args.dataset}_detect_val", cfg, False, output_dir="./output/")
+evaluator = COCOEvaluator(f"{args.dataset}_detect_val", cfg, False, output_dir=cfg.OUTPUT_DIR)
 val_loader = build_detection_test_loader(cfg, f"{args.dataset}_detect_val")
 inference_on_dataset(predictor.model, val_loader, evaluator)
 
 """
 Visualize Output
 """
-for d in random.sample(test_dataset_dicts, 3):
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.3
+predictor = DefaultPredictor(cfg)
+for d in random.sample(test_dataset_dicts, 10):
     im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val", d["file_name"]))
     im = im[:,:,::-1]
     outputs = predictor(im)
@@ -114,6 +140,4 @@ for d in random.sample(test_dataset_dicts, 3):
                        cv2.COLOR_RGBA2RGB)
     plt.imshow(img)
     plt.show()
-
-    # plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), args.dataset, d["file_name"]), img)
 

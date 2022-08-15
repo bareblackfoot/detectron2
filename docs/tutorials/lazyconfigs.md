@@ -17,6 +17,7 @@ doesn't exist in Yaml:
 * Import / compose other config files, using the familiar Python import syntax.
 
 A Python config file can be loaded like this:
+
 ```python
 # config.py:
 a = dict(x=1, y=2, z=dict(xx=1))
@@ -24,6 +25,7 @@ b = dict(x=3, y=4)
 
 # my_code.py:
 from detectron2.config import LazyConfig
+
 cfg = LazyConfig.load("path/to/config.py")  # an omegaconf dictionary
 assert cfg.a.z.xx == 1
 ```
@@ -55,9 +57,11 @@ call to a function/class. The dictionary consists of:
 
 We provide a helper function [LazyCall](../modules/config.html#detectron2.config.LazyCall) that helps create such dictionaries.
 The following code using `LazyCall`
+
 ```python
 from detectron2.config import LazyCall as L
 from my_app import Trainer, Optimizer
+
 cfg = L(Trainer)(
   optimizer=L(Optimizer)(
     lr=0.01,
@@ -79,8 +83,10 @@ cfg = {
 By representing objects using such dictionaries, a general
 [instantiate](../modules/config.html#detectron2.config.instantiate)
 function can turn them into actual objects, i.e.:
+
 ```python
 from detectron2.config import instantiate
+
 trainer = instantiate(cfg)
 # equivalent to:
 # from my_app import Trainer, Optimizer
@@ -122,9 +128,11 @@ Despite of this, our model zoo configs still follow some simple conventions for 
 `cfg.model` defines a model object, `cfg.dataloader.{train,test}` defines dataloader objects,
 and `cfg.train` contains training options in key-value form.
 In addition to `print()`, a better way to view the structure of a config is like this:
+
 ```python
 from detectron2.model_zoo import get_config
 from detectron2.config import LazyConfig
+
 print(LazyConfig.to_py(get_config("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.py")))
 ```
 From the output it's easier to find relevant options to change, e.g.

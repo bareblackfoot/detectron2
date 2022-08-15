@@ -15,16 +15,18 @@ we no longer add functionality / new keys to the Yacs/Yaml-based config system.
 ### Basic Usage
 
 Some basic usage of the `CfgNode` object is shown here. See more in [documentation](../modules/config.html#detectron2.config.CfgNode).
+
 ```python
 from detectron2.config import get_cfg
-cfg = get_cfg()    # obtain detectron2's default config
-cfg.xxx = yyy      # add new configs for your own custom components
-cfg.merge_from_file("my_cfg.yaml")   # load values from a file
 
-cfg.merge_from_list(["MODEL.WEIGHTS", "weights.pth"])   # can also load values from a list of str
+cfg = get_cfg()  # obtain detectron2's default config
+cfg.xxx = yyy  # add new configs for your own custom components
+cfg.merge_from_file("my_cfg.yaml")  # load values from a file
+
+cfg.merge_from_list(["MODEL.WEIGHTS", "weights.pth"])  # can also load values from a list of str
 print(cfg.dump())  # print formatted configs
 with open("output.yaml", "w") as f:
-  f.write(cfg.dump())   # save config to file
+   f.write(cfg.dump())  # save config to file
 ```
 
 In addition to the basic Yaml syntax, the config file can
@@ -47,9 +49,11 @@ check [Config References](../modules/config.html#config-references)
 
 A project that lives outside the detectron2 library may define its own configs, which will need to be added
 for the project to be functional, e.g.:
+
 ```python
 from detectron2.projects.point_rend import add_pointrend_config
-cfg = get_cfg()    # obtain detectron2's default config
+
+cfg = get_cfg()  # obtain detectron2's default config
 add_pointrend_config(cfg)  # add pointrend's default config
 # ... ...
 ```

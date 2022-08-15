@@ -40,20 +40,20 @@ args = parser.parse_args()
 """
 Train
 """
-register_coco_instances(f"{args.dataset}_detect_train", {},
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/instances_train.json",
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/train")
-train_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_detect_train")
-register_coco_instances(f"{args.dataset}_detect_val", {},
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/instances_val.json",
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val")
-val_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_detect_val")
+register_coco_instances(f"{args.dataset}_detect_with_seg_train", {},
+                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg_with_seg/instances_train.json",
+                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/train")
+train_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_detect_with_seg_train")
+register_coco_instances(f"{args.dataset}_detect_with_seg_val", {},
+                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/instances_val.json",
+                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/val")
+val_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_detect_with_seg_val")
 
 
 cfg = get_cfg()
 cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
-cfg.DATASETS.TRAIN = (f"{args.dataset}_detect_train",)
-cfg.DATASETS.TEST = (f"{args.dataset}_detect_val",)
+cfg.DATASETS.TRAIN = (f"{args.dataset}_detect_with_seg_train",)
+cfg.DATASETS.TEST = (f"{args.dataset}_detect_with_seg_val",)
 cfg.DATALOADER.NUM_WORKERS = 4
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
 cfg.SOLVER.IMS_PER_BATCH = 32
@@ -69,10 +69,10 @@ cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset)
 """
 Visualize Input
 """
-test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/instances_val.json"),
-                                    image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val",
-                dataset_name=f"{args.dataset}_detect_val", extra_annotation_keys=None)
-json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/instances_val.json")
+test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/instances_val.json"),
+                                    image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/val",
+                                    dataset_name=f"{args.dataset}_detect_with_seg_val", extra_annotation_keys=None)
+json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/instances_val.json")
 with open(json_file) as f:
     imgs_data = json.load(f)
 categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['categories']))]
@@ -85,7 +85,7 @@ if args.visualize:
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     predictor = DefaultPredictor(cfg)
     for d in random.sample(test_dataset_dicts, 3):
-        im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val", d["file_name"]))
+        im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/val", d["file_name"]))
         im = im[:,:,::-1]
         outputs = predictor(im)
         v = Visualizer(im,#[:, :, ::-1],
@@ -113,8 +113,8 @@ Test Before Finetuning
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
 predictor = DefaultPredictor(cfg)
-evaluator = COCOEvaluator(f"{args.dataset}_detect_val", cfg, False, output_dir="./output/")
-val_loader = build_detection_test_loader(cfg, f"{args.dataset}_detect_val")
+evaluator = COCOEvaluator(f"{args.dataset}_detect_with_seg_val", cfg, False, output_dir="./output/")
+val_loader = build_detection_test_loader(cfg, f"{args.dataset}_detect_with_seg_val")
 inference_on_dataset(predictor.model, val_loader, evaluator)
 
 """
@@ -135,15 +135,15 @@ predictor = DefaultPredictor(cfg)
 Test After Finetuning
 """
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
-evaluator = COCOEvaluator(f"{args.dataset}_detect_val", cfg, False, output_dir="./output/")
-val_loader = build_detection_test_loader(cfg, f"{args.dataset}_detect_val")
+evaluator = COCOEvaluator(f"{args.dataset}_detect_with_seg_val", cfg, False, output_dir="./output/")
+val_loader = build_detection_test_loader(cfg, f"{args.dataset}_detect_with_seg_val")
 inference_on_dataset(predictor.model, val_loader, evaluator)
 
 """
 Visualize Output
 """
 for d in random.sample(test_dataset_dicts, 3):
-    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val", d["file_name"]))
+    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/val", d["file_name"]))
     im = im[:,:,::-1]
     outputs = predictor(im)
     v = Visualizer(im,

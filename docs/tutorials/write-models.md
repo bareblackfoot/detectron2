@@ -14,21 +14,23 @@ we provide a registration mechanism for users to inject custom implementation th
 will be immediately available to use in config files.
 
 For example, to add a new backbone, import this code in your code:
+
 ```python
 from detectron2.modeling import BACKBONE_REGISTRY, Backbone, ShapeSpec
 
+
 @BACKBONE_REGISTRY.register()
 class ToyBackbone(Backbone):
-  def __init__(self, cfg, input_shape):
-    super().__init__()
-    # create your own backbone
-    self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=16, padding=3)
+   def __init__(self, cfg, input_shape):
+      super().__init__()
+      # create your own backbone
+      self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=16, padding=3)
 
-  def forward(self, image):
-    return {"conv1": self.conv1(image)}
+   def forward(self, image):
+      return {"conv1": self.conv1(image)}
 
-  def output_shape(self):
-    return {"conv1": ShapeSpec(channels=64, stride=16)}
+   def output_shape(self):
+      return {"conv1": ShapeSpec(channels=64, stride=16)}
 ```
 
 In this code, we implement a new backbone following the interface of the

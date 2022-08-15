@@ -42,11 +42,12 @@ For example, if you want to resize all images to a fixed size for training, use:
 
 ```python
 import detectron2.data.transforms as T
-from detectron2.data import DatasetMapper   # the default mapper
+from detectron2.data import DatasetMapper  # the default mapper
+
 dataloader = build_detection_train_loader(cfg,
-   mapper=DatasetMapper(cfg, is_train=True, augmentations=[
-      T.Resize((800, 800))
-   ]))
+                                          mapper=DatasetMapper(cfg, is_train=True, augmentations=[
+                                              T.Resize((800, 800))
+                                          ]))
 # use this dataloader instead of the default
 ```
 If the arguments of the default [DatasetMapper](../modules/data.html#detectron2.data.DatasetMapper)
@@ -54,7 +55,9 @@ does not provide what you need, you may write a custom mapper function and use i
 
 ```python
 from detectron2.data import detection_utils as utils
- # Show how to implement a minimal mapper, similar to the default DatasetMapper
+
+
+# Show how to implement a minimal mapper, similar to the default DatasetMapper
 def mapper(dataset_dict):
     dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
     # can use other ways to read image
@@ -68,10 +71,12 @@ def mapper(dataset_dict):
         for annotation in dataset_dict.pop("annotations")
     ]
     return {
-       # create the format that the model expects
-       "image": image,
-       "instances": utils.annotations_to_instances(annos, image.shape[1:])
+        # create the format that the model expects
+        "image": image,
+        "instances": utils.annotations_to_instances(annos, image.shape[1:])
     }
+
+
 dataloader = build_detection_train_loader(cfg, mapper=mapper)
 ```
 

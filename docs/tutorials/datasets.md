@@ -21,12 +21,17 @@ has a live example of how to register and train on a dataset of custom formats.
 To let detectron2 know how to obtain a dataset named "my_dataset", users need to implement
 a function that returns the items in your dataset and then tell detectron2 about this
 function:
+
 ```python
 def my_dataset_function():
   ...
-  return list[dict] in the following format
+  return list[dict] in the
+  following
+  format
+
 
 from detectron2.data import DatasetCatalog
+
 DatasetCatalog.register("my_dataset", my_dataset_function)
 # later, to access the data:
 data: List[Dict] = DatasetCatalog.get("my_dataset")
@@ -184,6 +189,7 @@ You can do it like this (using the metadata key "thing_classes" as an example):
 
 ```python
 from detectron2.data import MetadataCatalog
+
 MetadataCatalog.get("my_dataset").thing_classes = ["person", "dog"]
 ```
 
@@ -249,8 +255,10 @@ Some additional metadata that are specific to the evaluation of certain datasets
 
 If your instance-level (detection, segmentation, keypoint) dataset is already a json file in the COCO format,
 the dataset and its associated metadata can be registered easily with:
+
 ```python
 from detectron2.data.datasets import register_coco_instances
+
 register_coco_instances("my_dataset", {}, "json_annotation.json", "path/to/image/dir")
 ```
 
