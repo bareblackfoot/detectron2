@@ -53,6 +53,8 @@ val_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_detect_with_seg_val"
 
 cfg = get_cfg()
 cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
+cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR , args.dataset)
+os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 cfg.DATASETS.TRAIN = (f"{args.dataset}_detect_with_seg_train",)
 cfg.DATASETS.TEST = (f"{args.dataset}_detect_with_seg_val",)
 cfg.DATALOADER.NUM_WORKERS = 4
