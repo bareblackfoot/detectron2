@@ -74,7 +74,7 @@ cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
 # cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
 # predictor = DefaultPredictor(cfg)
 for d in random.sample(test_dataset_dicts, 10):
-    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val", d["file_name"]))
+    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/val", d["file_name"]))
     im = im[:,:,::-1]
     # outputs = predictor(im)
     # v = Visualizer(im,  # [:, :, ::-1],
@@ -120,7 +120,7 @@ Visualize Output
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.3
 predictor = DefaultPredictor(cfg)
 for d in random.sample(test_dataset_dicts, 10):
-    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect/val", d["file_name"]))
+    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_detect_with_seg/val", d["file_name"]))
     im = im[:,:,::-1]
     outputs = predictor(im)
     v = Visualizer(im,  # [:, :, ::-1],
