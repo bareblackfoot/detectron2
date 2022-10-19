@@ -20,10 +20,11 @@ from detectron2.engine import DefaultTrainer
 from detectron2.utils.visualizer import ColorMode
 from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-import os, json, cv2, random
+import os, json, cv2, random, torch
 import argparse
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
+from demo.predictor import AsyncPredictor
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
@@ -34,6 +35,7 @@ from detectron2.data.datasets import register_coco_instances, load_coco_json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--visualize", type=bool, default=False)
+parser.add_argument("--parallel", type=bool, default=True)
 parser.add_argument("--dataset", type=str, default="mp3d")
 parser.add_argument("--tag", type=str, default="direct_detect_with_seg")
 parser.add_argument("--project-dir", type=str, default="/home/blackfoot/codes/detectron2")
@@ -60,7 +62,7 @@ cfg.DATASETS.TRAIN = (f"{args.dataset}_{args.tag}_train",)
 cfg.DATASETS.TEST = (f"{args.dataset}_{args.tag}_val",)
 cfg.DATALOADER.NUM_WORKERS = 4
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
-cfg.SOLVER.IMS_PER_BATCH = 32
+cfg.SOLVER.IMS_PER_BATCH = 16
 cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
 cfg.SOLVER.MAX_ITER = 180000
 cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
@@ -112,16 +114,21 @@ if args.visualize:
 Test Before Finetuning
 """
 
-os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
-predictor = DefaultPredictor(cfg)
-evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
-val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
-inference_on_dataset(predictor.model, val_loader, evaluator)
+# os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+# cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
+# predictor = DefaultPredictor(cfg)
+# evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
+# val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
+# inference_on_dataset(predictor.model, val_loader, evaluator)
 
 """
 Start Finetuning
 """
+if args.parallel:
+    num_gpu = torch.cuda.device_count()
+    predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
+else:
+    predictor = DefaultPredictor(cfg)
 trainer = DefaultTrainer(cfg)
 trainer.resume_or_load(resume=False)
 trainer.train()
