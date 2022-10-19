@@ -34,7 +34,7 @@ from detectron2.data.datasets import register_coco_instances, load_coco_json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--visualize", type=bool, default=False)
-parser.add_argument("--dataset", type=str, default="gibson_tiny")
+parser.add_argument("--dataset", type=str, default="mp3d")
 args = parser.parse_args()
 
 register_coco_instances(f"{args.dataset}_detect_val", {},
@@ -103,6 +103,7 @@ Test
 ckpts = [os.path.join(cfg.OUTPUT_DIR, x) for x in sorted(os.listdir(cfg.OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
 ckpts.reverse()
 last_ckpt = ckpts[0]
+# last_ckpt = "/home/blackfoot/codes/Object-Graph-Memory-Objectgoal/model/Detector/model_finetune_gibson.pth"
 # if args.dataset == "mp3d":
 #     last_ckpt = os.path.join(cfg.OUTPUT_DIR, "model_0094999.pth")
 
