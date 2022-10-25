@@ -9,11 +9,11 @@ os.environ["PYTHONUNBUFFERED"] = "1"
 import detectron2 as detectron2_ # importing the installed module
 
 sys.path.insert(0, '.')
-sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
+# sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
+# del sys.modules["detectron2"]
+# sys.path.insert(0, '/home/blackfoot/codes/detectron2_/detectron2')
 # sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
-sys.path.insert(0, '/home/blackfoot/codes/detectron2_/detectron2')
 # sys.path.insert(0, '/home/blackfoot/codes')
-del sys.modules["detectron2"]
 import detectron2
 print(detectron2.__path__)
 from detectron2.engine import DefaultTrainer
@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 from detectron2.utils.logger import setup_logger
 setup_logger()
 from detectron2.data.datasets import register_coco_instances, load_coco_json
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--visualize", type=bool, default=False)
@@ -40,6 +41,16 @@ parser.add_argument("--dataset", type=str, default="mp3d")
 parser.add_argument("--tag", type=str, default="direct_detect_with_seg")
 parser.add_argument("--project-dir", type=str, default="/home/blackfoot/codes/detectron2")
 args = parser.parse_args()
+
+
+def draw_bbox(rgb: np.ndarray, bboxes: np.ndarray) -> np.ndarray:
+    imgHeight, imgWidth, _ = rgb.shape
+    if bboxes.max() <= 1: bboxes[:, [0, 2]] *= imgWidth; bboxes[:, [1, 3]] *= imgHeight
+    for i, bbox in enumerate(bboxes):
+        imgHeight, imgWidth, _ = rgb.shape
+        rgb = cv2.rectangle(rgb, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (255, 255, 0), int(5e-2 * imgHeight))
+    return rgb
+
 
 """
 Train
@@ -71,13 +82,14 @@ cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for t
 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
 
 
+split = "val"
 """
 Visualize Input
 """
-test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_val.json"),
-                                    image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val",
-                dataset_name=f"{args.dataset}_{args.tag}_val", extra_annotation_keys=None)
-json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_val.json")
+test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json"),
+                                    image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}",
+                dataset_name=f"{args.dataset}_{args.tag}_{split}", extra_annotation_keys=None)
+json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json")
 with open(json_file) as f:
     imgs_data = json.load(f)
 categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['categories']))]
@@ -86,14 +98,14 @@ val_dataset_metadata.set(thing_classes=categories)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
 
 if args.visualize:
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
     predictor = DefaultPredictor(cfg)
-    for d in random.sample(test_dataset_dicts, 3):
-        im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val", d["file_name"]))
+    for d in random.sample(test_dataset_dicts, 10):
+        im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}", d["file_name"]))
         im = im[:,:,::-1]
         outputs = predictor(im)
         v = Visualizer(im,#[:, :, ::-1],
-                       metadata=train_dataset_metadata,
+                       metadata=val_dataset_metadata,
                        scale=1.0,
                        instance_mode=ColorMode.IMAGE_BW
                        )
@@ -103,7 +115,7 @@ if args.visualize:
         plt.imshow(img)
         plt.show()
         visualizer = Visualizer(im,#[:, :, ::-1],
-                                metadata=train_dataset_metadata, scale=1.0)
+                                metadata=val_dataset_metadata, scale=1.0)
         out = visualizer.draw_dataset_dict(d)
         img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
                            cv2.COLOR_RGBA2RGB)
