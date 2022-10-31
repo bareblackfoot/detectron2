@@ -72,11 +72,11 @@ os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 cfg.DATASETS.TRAIN = (f"{args.dataset}_{args.tag}_train",)
 cfg.DATASETS.TEST = (f"{args.dataset}_{args.tag}_val",)
 cfg.DATALOADER.NUM_WORKERS = 4
-OUTPUT_DIR = "/home/blackfoot/codes/detectron2_/output/"
-ckpts = [os.path.join(OUTPUT_DIR, x) for x in sorted(os.listdir(OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
-ckpts.reverse()
-last_ckpt = ckpts[0]
-cfg.MODEL.WEIGHTS = last_ckpt #model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
+# OUTPUT_DIR = "/home/blackfoot/codes/detectron2_/output/"
+# ckpts = [os.path.join(OUTPUT_DIR, x) for x in sorted(os.listdir(OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
+# ckpts.reverse()
+# last_ckpt = ckpts[0]
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
 cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 cfg.SOLVER.IMS_PER_BATCH = 32
@@ -145,11 +145,11 @@ Test Before Finetuning
 """
 Start Finetuning
 """
-# if args.parallel:
-num_gpu = torch.cuda.device_count()
-predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
-# else:
-#     predictor = DefaultPredictor(cfg)
+if args.parallel:
+    num_gpu = torch.cuda.device_count()
+    predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
+else:
+    predictor = DefaultPredictor(cfg)
 trainer = DefaultTrainer(cfg)
 trainer.resume_or_load(resume=True)
 trainer.train()
