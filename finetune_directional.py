@@ -55,14 +55,6 @@ def draw_bbox(rgb: np.ndarray, bboxes: np.ndarray) -> np.ndarray:
 """
 Train
 """
-register_coco_instances(f"{args.dataset}_{args.tag}_train", {},
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_train.json",
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/train")
-train_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_train")
-register_coco_instances(f"{args.dataset}_{args.tag}_val", {},
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_val.json",
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val")
-val_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_val")
 
 
 cfg = get_cfg()
@@ -102,34 +94,39 @@ json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.
 with open(json_file) as f:
     imgs_data = json.load(f)
 categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['categories']))]
+del imgs_data
+register_coco_instances(f"{args.dataset}_{args.tag}_train", {},
+                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_train.json",
+                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/train")
+train_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_train")
 train_dataset_metadata.set(thing_classes=categories)
-val_dataset_metadata.set(thing_classes=categories)
+# val_dataset_metadata.set(thing_classes=categories)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
 
-if args.visualize:
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
-    predictor = DefaultPredictor(cfg)
-    for d in random.sample(test_dataset_dicts, 10):
-        im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}", d["file_name"]))
-        im = im[:,:,::-1]
-        outputs = predictor(im)
-        v = Visualizer(im,#[:, :, ::-1],
-                       metadata=val_dataset_metadata,
-                       scale=1.0,
-                       instance_mode=ColorMode.IMAGE_BW
-                       )
-        out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-        img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
-                           cv2.COLOR_RGBA2RGB)
-        plt.imshow(img)
-        plt.show()
-        visualizer = Visualizer(im,#[:, :, ::-1],
-                                metadata=val_dataset_metadata, scale=1.0)
-        out = visualizer.draw_dataset_dict(d)
-        img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
-                           cv2.COLOR_RGBA2RGB)
-        plt.imshow(img)
-        plt.show()
+# if args.visualize:
+#     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
+#     predictor = DefaultPredictor(cfg)
+#     for d in random.sample(test_dataset_dicts, 10):
+#         im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}", d["file_name"]))
+#         im = im[:,:,::-1]
+#         outputs = predictor(im)
+#         v = Visualizer(im,#[:, :, ::-1],
+#                        metadata=val_dataset_metadata,
+#                        scale=1.0,
+#                        instance_mode=ColorMode.IMAGE_BW
+#                        )
+#         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+#         img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
+#                            cv2.COLOR_RGBA2RGB)
+#         plt.imshow(img)
+#         plt.show()
+#         visualizer = Visualizer(im,#[:, :, ::-1],
+#                                 metadata=val_dataset_metadata, scale=1.0)
+#         out = visualizer.draw_dataset_dict(d)
+#         img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
+#                            cv2.COLOR_RGBA2RGB)
+#         plt.imshow(img)
+#         plt.show()
 
 """
 Test Before Finetuning
@@ -164,27 +161,31 @@ predictor = DefaultPredictor(cfg)
 """
 Test After Finetuning
 """
+# register_coco_instances(f"{args.dataset}_{args.tag}_val", {},
+#                         f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_val.json",
+#                         f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val")
+# val_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_val")
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
 evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
 val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
 inference_on_dataset(predictor.model, val_loader, evaluator)
-
-"""
-Visualize Output
-"""
-for d in random.sample(test_dataset_dicts, 3):
-    im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val", d["file_name"]))
-    im = im[:,:,::-1]
-    outputs = predictor(im)
-    v = Visualizer(im,
-                   metadata=val_dataset_metadata,
-                   scale=1.0,
-                   instance_mode=ColorMode.IMAGE_BW
-                   )
-    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    img = cv2.cvtColor(out.get_image(), cv2.COLOR_RGBA2RGB)
-    if args.visualize:
-        plt.imshow(img)
-        plt.show()
-    plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), d["file_name"]), img)
-
+#
+# """
+# Visualize Output
+# """
+# for d in random.sample(test_dataset_dicts, 3):
+#     im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val", d["file_name"]))
+#     im = im[:,:,::-1]
+#     outputs = predictor(im)
+#     v = Visualizer(im,
+#                    metadata=val_dataset_metadata,
+#                    scale=1.0,
+#                    instance_mode=ColorMode.IMAGE_BW
+#                    )
+#     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+#     img = cv2.cvtColor(out.get_image(), cv2.COLOR_RGBA2RGB)
+#     if args.visualize:
+#         plt.imshow(img)
+#         plt.show()
+#     plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), d["file_name"]), img)
+#
