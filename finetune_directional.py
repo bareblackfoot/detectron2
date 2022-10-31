@@ -95,7 +95,7 @@ Visualize Input
 """
 test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json"),
                                     image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}",
-                dataset_name=f"{args.dataset}_{args.tag}_{split}", extra_annotation_keys=None)
+                                    dataset_name=f"{args.dataset}_{args.tag}_{split}", extra_annotation_keys=None)
 json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json")
 with open(json_file) as f:
     imgs_data = json.load(f)
