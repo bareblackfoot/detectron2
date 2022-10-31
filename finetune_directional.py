@@ -73,10 +73,13 @@ cfg.DATASETS.TRAIN = (f"{args.dataset}_{args.tag}_train",)
 cfg.DATASETS.TEST = (f"{args.dataset}_{args.tag}_val",)
 cfg.DATALOADER.NUM_WORKERS = 4
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
-cfg.SOLVER.IMS_PER_BATCH = 16
-cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
-cfg.SOLVER.MAX_ITER = 180000
-cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
+cfg.SOLVER.IMS_PER_BATCH = 32
+cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
+# cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
+cfg.SOLVER.MAX_ITER = 120000
+cfg.SOLVER.STEPS = [80000, 100000]        # do not decay learning rate
+# cfg.SOLVER.MAX_ITER = 180000
+# cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
   # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
@@ -136,13 +139,13 @@ Test Before Finetuning
 """
 Start Finetuning
 """
-if args.parallel:
-    num_gpu = torch.cuda.device_count()
-    predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
-else:
-    predictor = DefaultPredictor(cfg)
+# if args.parallel:
+num_gpu = torch.cuda.device_count()
+predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
+# else:
+#     predictor = DefaultPredictor(cfg)
 trainer = DefaultTrainer(cfg)
-trainer.resume_or_load(resume=False)
+trainer.resume_or_load(resume=True)
 trainer.train()
 
 """
