@@ -8,7 +8,13 @@ import os, sys
 os.environ["PYTHONUNBUFFERED"] = "1"
 import detectron2 as detectron2_ # importing the installed module
 
-sys.path.insert(0, '.')
+# sys.path.insert(0, '.')
+sys.path.insert(0, '/home/blackfoot/codes/detectron2D')
+# sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
+# sys.path.insert(0, '/home/blackfoot/codes/detectron2D/detectron2')
+# sys.path.insert(0, '/home/blackfoot/codes')
+del sys.modules["detectron2"]
+# sys.path.insert(0, '.')
 # sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
 # del sys.modules["detectron2"]
 # sys.path.insert(0, '/home/blackfoot/codes/detectron2_/detectron2')
