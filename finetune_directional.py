@@ -70,7 +70,7 @@ os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 cfg.DATASETS.TRAIN = (f"{args.dataset}_{args.tag}_train",)
 cfg.DATASETS.TEST = (f"{args.dataset}_{args.tag}_val",)
 cfg.DATALOADER.NUM_WORKERS = 4
-OUTPUT_DIR = "/home/blackfoot/codes/detectron2_/output/"
+OUTPUT_DIR = f"/home/blackfoot/codes/detectron2_/output/{args.dataset}"
 ckpts = [os.path.join(OUTPUT_DIR, x) for x in sorted(os.listdir(OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
 ckpts.reverse()
 last_ckpt = ckpts[0]
