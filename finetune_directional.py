@@ -74,6 +74,7 @@ OUTPUT_DIR = "/home/blackfoot/codes/detectron2_/output/"
 ckpts = [os.path.join(OUTPUT_DIR, x) for x in sorted(os.listdir(OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
 ckpts.reverse()
 last_ckpt = ckpts[0]
+print(last_ckpt)
 cfg.MODEL.WEIGHTS = last_ckpt # model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
 cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
