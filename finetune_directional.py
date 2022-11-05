@@ -1,8 +1,16 @@
 import os, sys
-os.environ["PYTHONUNBUFFERED"] = "1"
-import detectron2 as detectron2_ # importing the installed module
+# os.environ["PYTHONUNBUFFERED"] = "1"
+# import detectron2 as detectron2_ # importing the installed module
+# sys.path.insert(0, '.')
+# import detectron2
 sys.path.insert(0, '.')
+sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
+# sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
+sys.path.insert(0, '/home/blackfoot/codes/detectron2_/detectron2')
+# sys.path.insert(0, '/home/blackfoot/codes')
+del sys.modules["detectron2"]
 import detectron2
+print(detectron2.__path__)
 from detectron2.engine import DefaultTrainer
 from detectron2.utils.visualizer import ColorMode
 from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
