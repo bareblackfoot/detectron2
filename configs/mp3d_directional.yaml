@@ -263,7 +263,7 @@ MODEL:
     - p3
     - p4
     - p5
-    LOSS_WEIGHT: 1.0
+    LOSS_WEIGHT: 0.0
     NAME: SemSegFPNHead
     NORM: GN
     NUM_CLASSES: 54
