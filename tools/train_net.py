@@ -154,6 +154,8 @@ def main(args):
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
+    args.tag = "withoutseg"
+    args.split = "val"
     print("Command Line Args:", args)
     test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{args.split}.json"),
                                         image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{args.split}",
