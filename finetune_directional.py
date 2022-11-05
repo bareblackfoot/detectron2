@@ -1,8 +1,13 @@
 import os, sys
-# os.environ["PYTHONUNBUFFERED"] = "1"
-# import detectron2 as detectron2_ # importing the installed module
-# sys.path.insert(0, '.')
-# import detectron2
+
+# aa = os.getcwd()
+# if "PYTHONPATH" not in os.environ:
+#     os.environ["PYTHONPATH"] = ""
+# os.environ["PYTHONPATH"] += ":" + aa
+# os.environ["PYTHONPATH"] += ":" + "/".join(aa.split("/")[:-1])
+os.environ["PYTHONUNBUFFERED"] = "1"
+import detectron2 as detectron2_ # importing the installed module
+
 sys.path.insert(0, '.')
 sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
 # sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
@@ -15,36 +20,36 @@ from detectron2.engine import DefaultTrainer
 from detectron2.utils.visualizer import ColorMode
 from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-import os, json, cv2, random, torch
+import os, json, cv2, random
 import argparse
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
-from demo.predictor import AsyncPredictor
 from detectron2.config import get_cfg
+from demo.predictor import AsyncPredictor
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 import matplotlib.pyplot as plt
 from detectron2.utils.logger import setup_logger
 setup_logger()
 from detectron2.data.datasets import register_coco_instances, load_coco_json
-import numpy as np
+import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--visualize", type=bool, default=False)
 parser.add_argument("--parallel", type=bool, default=True)
 parser.add_argument("--dataset", type=str, default="mp3d")
-parser.add_argument("--tag", type=str, default="direct_detect_with_seg")
+parser.add_argument("--tag", type=str, default="withoutseg")
 parser.add_argument("--project-dir", type=str, default="/home/blackfoot/codes/detectron2")
 args = parser.parse_args()
 
 
-def draw_bbox(rgb: np.ndarray, bboxes: np.ndarray) -> np.ndarray:
-    imgHeight, imgWidth, _ = rgb.shape
-    if bboxes.max() <= 1: bboxes[:, [0, 2]] *= imgWidth; bboxes[:, [1, 3]] *= imgHeight
-    for i, bbox in enumerate(bboxes):
-        imgHeight, imgWidth, _ = rgb.shape
-        rgb = cv2.rectangle(rgb, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (255, 255, 0), int(5e-2 * imgHeight))
-    return rgb
+# def draw_bbox(rgb: np.ndarray, bboxes: np.ndarray) -> np.ndarray:
+#     imgHeight, imgWidth, _ = rgb.shape
+#     if bboxes.max() <= 1: bboxes[:, [0, 2]] *= imgWidth; bboxes[:, [1, 3]] *= imgHeight
+#     for i, bbox in enumerate(bboxes):
+#         imgHeight, imgWidth, _ = rgb.shape
+#         rgb = cv2.rectangle(rgb, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (255, 255, 0), int(5e-2 * imgHeight))
+#     return rgb
 
 
 if __name__ == '__main__':
@@ -71,11 +76,13 @@ if __name__ == '__main__':
     cfg.SOLVER.IMS_PER_BATCH = 32
     cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
     # cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
-    cfg.SOLVER.MAX_ITER = 120000
-    cfg.SOLVER.STEPS = [80000, 100000]  # do not decay learning rate
+    # cfg.SOLVER.MAX_ITER = 120000
+    # cfg.SOLVER.STEPS = [80000, 100000]  # do not decay learning rate
+    cfg.SOLVER.MAX_ITER = 180000
+    cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
     # cfg.SOLVER.MAX_ITER = 180000
     # cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
-    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512  # faster, and good enough for this toy dataset (default: 512)
+    # cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512  # faster, and good enough for this toy dataset (default: 512)
     # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
     # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
 
@@ -139,7 +146,7 @@ if __name__ == '__main__':
     """
     # if args.parallel:
     num_gpu = torch.cuda.device_count()
-    predictor = AsyncPredictor(cfg, num_gpus=2)
+    predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
     # else:
     #     predictor = DefaultPredictor(cfg)
     trainer = DefaultTrainer(cfg)
