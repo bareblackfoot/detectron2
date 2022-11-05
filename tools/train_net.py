@@ -154,6 +154,7 @@ def main(args):
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
+    args.dataset = "mp3d"
     args.tag = "withoutseg"
     args.split = "val"
     print("Command Line Args:", args)
