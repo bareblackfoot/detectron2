@@ -75,6 +75,7 @@ if __name__ == '__main__':
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     cfg.SOLVER.IMS_PER_BATCH = 16
     cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
+    cfg.SOLVER.BASE_LR_END = 0.0  # pick a good LR
     # cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
     # cfg.SOLVER.MAX_ITER = 120000
     # cfg.SOLVER.STEPS = [80000, 100000]  # do not decay learning rate
