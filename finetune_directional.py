@@ -1,26 +1,7 @@
 import os, sys
-
-# aa = os.getcwd()
-# if "PYTHONPATH" not in os.environ:
-#     os.environ["PYTHONPATH"] = ""
-# os.environ["PYTHONPATH"] += ":" + aa
-# os.environ["PYTHONPATH"] += ":" + "/".join(aa.split("/")[:-1])
 os.environ["PYTHONUNBUFFERED"] = "1"
 import detectron2 as detectron2_ # importing the installed module
-
-
 sys.path.insert(0, '.')
-# sys.path.insert(0, '/home/blackfoot/codes/detectron2D')
-# sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
-# sys.path.insert(0, '/home/blackfoot/codes/detectron2D/detectron2')
-# sys.path.insert(0, '/home/blackfoot/codes')
-# del sys.modules["detectron2"]
-# sys.path.insert(0, '.')
-# sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
-# del sys.modules["detectron2"]
-# sys.path.insert(0, '/home/blackfoot/codes/detectron2_/detectron2')
-# sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
-# sys.path.insert(0, '/home/blackfoot/codes')
 import detectron2
 print(detectron2.__path__)
 from detectron2.engine import DefaultTrainer
@@ -81,7 +62,6 @@ if __name__ == '__main__':
     cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     cfg.SOLVER.IMS_PER_BATCH = 16
-    cfg.MODEL.DEVICE = "cuda:0"
     cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
     # cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
     cfg.SOLVER.MAX_ITER = 120000
