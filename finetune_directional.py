@@ -79,6 +79,7 @@ cfg.MODEL.WEIGHTS = last_ckpt # model_zoo.get_checkpoint_url("COCO-InstanceSegme
 cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 cfg.SOLVER.IMS_PER_BATCH = 16
+cfg.MODEL.DEVICE = "cuda:0"
 cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
 # cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
 cfg.SOLVER.MAX_ITER = 120000
@@ -90,7 +91,7 @@ cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for t
 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
 
 
-split = "train"
+split = "val"
 """
 Visualize Input
 """
@@ -148,11 +149,11 @@ Test Before Finetuning
 """
 Start Finetuning
 """
-if args.parallel:
-    num_gpu = torch.cuda.device_count()
-    predictor = AsyncPredictor(cfg, num_gpus=2)
-else:
-    predictor = DefaultPredictor(cfg)
+# if args.parallel:
+num_gpu = torch.cuda.device_count()
+predictor = AsyncPredictor(cfg, num_gpus=2)
+# else:
+#     predictor = DefaultPredictor(cfg)
 trainer = DefaultTrainer(cfg)
 trainer.resume_or_load(resume=True)
 trainer.train()
