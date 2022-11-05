@@ -90,7 +90,7 @@ cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for t
 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
 
 
-split = "val"
+split = "train"
 """
 Visualize Input
 """
@@ -109,7 +109,6 @@ train_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_train")
 train_dataset_metadata.set(thing_classes=categories)
 # val_dataset_metadata.set(thing_classes=categories)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
-
 # if args.visualize:
 #     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
 #     predictor = DefaultPredictor(cfg)
@@ -151,7 +150,7 @@ Start Finetuning
 """
 if args.parallel:
     num_gpu = torch.cuda.device_count()
-    predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
+    predictor = AsyncPredictor(cfg, num_gpus=2)
 else:
     predictor = DefaultPredictor(cfg)
 trainer = DefaultTrainer(cfg)
