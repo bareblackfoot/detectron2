@@ -3,7 +3,6 @@ os.environ["PYTHONUNBUFFERED"] = "1"
 import detectron2 as detectron2_ # importing the installed module
 sys.path.insert(0, '.')
 import detectron2
-print(detectron2.__path__)
 from detectron2.engine import DefaultTrainer
 from detectron2.utils.visualizer import ColorMode
 from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
@@ -61,7 +60,7 @@ if __name__ == '__main__':
     cfg.MODEL.WEIGHTS = last_ckpt  # model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
     cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-    cfg.SOLVER.IMS_PER_BATCH = 16
+    cfg.SOLVER.IMS_PER_BATCH = 32
     cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
     # cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
     cfg.SOLVER.MAX_ITER = 120000
