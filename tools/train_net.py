@@ -176,3 +176,10 @@ if __name__ == "__main__":
         dist_url=args.dist_url,
         args=(args,),
     )
+# for anno in imgs_data['annotations']:
+#     x,y,w,h = anno['bbox']
+#     anno['segmentation'] = [[x,y, x+w,y, x,y+h, x+w,y+h]]
+# json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/mp3d_withoutseg/instances_train.json")
+# with open(json_file, "w") as aa:
+#     json.dump(imgs_data, aa)
+
