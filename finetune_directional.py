@@ -8,12 +8,12 @@ import os, sys
 os.environ["PYTHONUNBUFFERED"] = "1"
 import detectron2 as detectron2_ # importing the installed module
 
-sys.path.insert(0, '.')
-sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
-# sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
-sys.path.insert(0, '/home/blackfoot/codes/detectron2_/detectron2')
-# sys.path.insert(0, '/home/blackfoot/codes')
-del sys.modules["detectron2"]
+# sys.path.insert(0, '.')
+# sys.path.insert(0, '/home/blackfoot/codes/detectron2_')
+# # sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
+# sys.path.insert(0, '/home/blackfoot/codes/detectron2_/detectron2')
+# # sys.path.insert(0, '/home/blackfoot/codes')
+# del sys.modules["detectron2"]
 import detectron2
 print(detectron2.__path__)
 from detectron2.engine import DefaultTrainer
@@ -140,6 +140,10 @@ if __name__ == '__main__':
     # evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
     # val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
     # inference_on_dataset(predictor.model, val_loader, evaluator)
+    import yaml
+    cfg_file = yaml.safe_load(cfg.dump())
+    with open('configs/mp3d_directional.yaml', 'w') as f:
+        yaml.dump(cfg_file, f)
 
     """
     Start Finetuning
@@ -152,6 +156,7 @@ if __name__ == '__main__':
     trainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=True)
     trainer.train()
+
 
     """
     Inference
