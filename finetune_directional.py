@@ -8,6 +8,7 @@ import os, sys
 os.environ["PYTHONUNBUFFERED"] = "1"
 import detectron2 as detectron2_ # importing the installed module
 
+
 sys.path.insert(0, '.')
 # sys.path.insert(0, '/home/blackfoot/codes/detectron2D')
 # sys.path.insert(0, '/home/blackfoot/codes/detectron2D/tools')
@@ -58,141 +59,141 @@ def draw_bbox(rgb: np.ndarray, bboxes: np.ndarray) -> np.ndarray:
     return rgb
 
 
-"""
-Train
-"""
+if __name__ == '__main__':
+    torch.multiprocessing.set_start_method('spawn')
+    """
+    Train
+    """
 
+    cfg = get_cfg()
+    cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
+    cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset)
+    os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+    cfg.DATASETS.TRAIN = (f"{args.dataset}_{args.tag}_train",)
+    cfg.DATASETS.TEST = (f"{args.dataset}_{args.tag}_val",)
+    cfg.DATALOADER.NUM_WORKERS = 16
+    OUTPUT_DIR = f"/home/blackfoot/codes/detectron2_/output/{args.dataset}"
+    ckpts = [os.path.join(OUTPUT_DIR, x) for x in sorted(os.listdir(OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
+    ckpts.reverse()
+    last_ckpt = ckpts[0]
+    print(last_ckpt)
+    cfg.MODEL.WEIGHTS = last_ckpt  # model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
+    cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
+    os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+    cfg.SOLVER.IMS_PER_BATCH = 16
+    cfg.MODEL.DEVICE = "cuda:0"
+    cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
+    # cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
+    cfg.SOLVER.MAX_ITER = 120000
+    cfg.SOLVER.STEPS = [80000, 100000]  # do not decay learning rate
+    # cfg.SOLVER.MAX_ITER = 180000
+    # cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
+    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512  # faster, and good enough for this toy dataset (default: 512)
+    # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
+    # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
 
-cfg = get_cfg()
-cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
-cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR , args.dataset)
-os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-cfg.DATASETS.TRAIN = (f"{args.dataset}_{args.tag}_train",)
-cfg.DATASETS.TEST = (f"{args.dataset}_{args.tag}_val",)
-cfg.DATALOADER.NUM_WORKERS = 16
-OUTPUT_DIR = f"/home/blackfoot/codes/detectron2_/output/{args.dataset}"
-ckpts = [os.path.join(OUTPUT_DIR, x) for x in sorted(os.listdir(OUTPUT_DIR)) if x.split(".")[-1] == "pth"]
-ckpts.reverse()
-last_ckpt = ckpts[0]
-print(last_ckpt)
-cfg.MODEL.WEIGHTS = last_ckpt # model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
-cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
-os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-cfg.SOLVER.IMS_PER_BATCH = 16
-cfg.MODEL.DEVICE = "cuda:0"
-cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
-# cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
-cfg.SOLVER.MAX_ITER = 120000
-cfg.SOLVER.STEPS = [80000, 100000]        # do not decay learning rate
-# cfg.SOLVER.MAX_ITER = 180000
-# cfg.SOLVER.STEPS = [30000, 80000, 120000]        # do not decay learning rate
-cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
-  # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
-# NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
+    split = "val"
+    """
+    Visualize Input
+    """
+    test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json"),
+                                        image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}",
+                                        dataset_name=f"{args.dataset}_{args.tag}_{split}", extra_annotation_keys=None)
+    json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json")
+    with open(json_file) as f:
+        imgs_data = json.load(f)
+    categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['categories']))]
+    del imgs_data
+    register_coco_instances(f"{args.dataset}_{args.tag}_train", {},
+                            f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_train.json",
+                            f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/train")
+    train_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_train")
+    train_dataset_metadata.set(thing_classes=categories)
+    # val_dataset_metadata.set(thing_classes=categories)
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
+    # if args.visualize:
+    #     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
+    #     predictor = DefaultPredictor(cfg)
+    #     for d in random.sample(test_dataset_dicts, 10):
+    #         im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}", d["file_name"]))
+    #         im = im[:,:,::-1]
+    #         outputs = predictor(im)
+    #         v = Visualizer(im,#[:, :, ::-1],
+    #                        metadata=val_dataset_metadata,
+    #                        scale=1.0,
+    #                        instance_mode=ColorMode.IMAGE_BW
+    #                        )
+    #         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+    #         img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
+    #                            cv2.COLOR_RGBA2RGB)
+    #         plt.imshow(img)
+    #         plt.show()
+    #         visualizer = Visualizer(im,#[:, :, ::-1],
+    #                                 metadata=val_dataset_metadata, scale=1.0)
+    #         out = visualizer.draw_dataset_dict(d)
+    #         img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
+    #                            cv2.COLOR_RGBA2RGB)
+    #         plt.imshow(img)
+    #         plt.show()
 
+    """
+    Test Before Finetuning
+    """
 
-split = "val"
-"""
-Visualize Input
-"""
-test_dataset_dicts = load_coco_json(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json"),
-                                    image_root=f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}",
-                                    dataset_name=f"{args.dataset}_{args.tag}_{split}", extra_annotation_keys=None)
-json_file = os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_{split}.json")
-with open(json_file) as f:
-    imgs_data = json.load(f)
-categories = [imgs_data['categories'][i]['name'] for i in range(len(imgs_data['categories']))]
-del imgs_data
-register_coco_instances(f"{args.dataset}_{args.tag}_train", {},
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_train.json",
-                        f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/train")
-train_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_train")
-train_dataset_metadata.set(thing_classes=categories)
-# val_dataset_metadata.set(thing_classes=categories)
-cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(categories)
-# if args.visualize:
-#     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
-#     predictor = DefaultPredictor(cfg)
-#     for d in random.sample(test_dataset_dicts, 10):
-#         im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/{split}", d["file_name"]))
-#         im = im[:,:,::-1]
-#         outputs = predictor(im)
-#         v = Visualizer(im,#[:, :, ::-1],
-#                        metadata=val_dataset_metadata,
-#                        scale=1.0,
-#                        instance_mode=ColorMode.IMAGE_BW
-#                        )
-#         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-#         img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
-#                            cv2.COLOR_RGBA2RGB)
-#         plt.imshow(img)
-#         plt.show()
-#         visualizer = Visualizer(im,#[:, :, ::-1],
-#                                 metadata=val_dataset_metadata, scale=1.0)
-#         out = visualizer.draw_dataset_dict(d)
-#         img = cv2.cvtColor(out.get_image(),#[:, :, ::-1],
-#                            cv2.COLOR_RGBA2RGB)
-#         plt.imshow(img)
-#         plt.show()
+    # os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+    # cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
+    # predictor = DefaultPredictor(cfg)
+    # evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
+    # val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
+    # inference_on_dataset(predictor.model, val_loader, evaluator)
 
-"""
-Test Before Finetuning
-"""
+    """
+    Start Finetuning
+    """
+    # if args.parallel:
+    num_gpu = torch.cuda.device_count()
+    predictor = AsyncPredictor(cfg, num_gpus=2)
+    # else:
+    #     predictor = DefaultPredictor(cfg)
+    trainer = DefaultTrainer(cfg)
+    trainer.resume_or_load(resume=True)
+    trainer.train()
 
-# os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-# cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
-# predictor = DefaultPredictor(cfg)
-# evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
-# val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
-# inference_on_dataset(predictor.model, val_loader, evaluator)
+    """
+    Inference
+    """
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+    predictor = DefaultPredictor(cfg)
 
-"""
-Start Finetuning
-"""
-# if args.parallel:
-num_gpu = torch.cuda.device_count()
-predictor = AsyncPredictor(cfg, num_gpus=2)
-# else:
-#     predictor = DefaultPredictor(cfg)
-trainer = DefaultTrainer(cfg)
-trainer.resume_or_load(resume=True)
-trainer.train()
-
-"""
-Inference
-"""
-cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
-predictor = DefaultPredictor(cfg)
-
-"""
-Test After Finetuning
-"""
-# register_coco_instances(f"{args.dataset}_{args.tag}_val", {},
-#                         f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_val.json",
-#                         f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val")
-# val_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_val")
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
-evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
-val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
-inference_on_dataset(predictor.model, val_loader, evaluator)
-#
-# """
-# Visualize Output
-# """
-# for d in random.sample(test_dataset_dicts, 3):
-#     im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val", d["file_name"]))
-#     im = im[:,:,::-1]
-#     outputs = predictor(im)
-#     v = Visualizer(im,
-#                    metadata=val_dataset_metadata,
-#                    scale=1.0,
-#                    instance_mode=ColorMode.IMAGE_BW
-#                    )
-#     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-#     img = cv2.cvtColor(out.get_image(), cv2.COLOR_RGBA2RGB)
-#     if args.visualize:
-#         plt.imshow(img)
-#         plt.show()
-#     plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), d["file_name"]), img)
-#
+    """
+    Test After Finetuning
+    """
+    # register_coco_instances(f"{args.dataset}_{args.tag}_val", {},
+    #                         f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/instances_val.json",
+    #                         f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val")
+    # val_dataset_metadata = MetadataCatalog.get(f"{args.dataset}_{args.tag}_val")
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
+    evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
+    val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
+    inference_on_dataset(predictor.model, val_loader, evaluator)
+    #
+    # """
+    # Visualize Output
+    # """
+    # for d in random.sample(test_dataset_dicts, 3):
+    #     im = cv2.imread(os.path.join(f"/home/blackfoot/codes/Object-Graph-Memory/data/{args.dataset}_{args.tag}/val", d["file_name"]))
+    #     im = im[:,:,::-1]
+    #     outputs = predictor(im)
+    #     v = Visualizer(im,
+    #                    metadata=val_dataset_metadata,
+    #                    scale=1.0,
+    #                    instance_mode=ColorMode.IMAGE_BW
+    #                    )
+    #     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+    #     img = cv2.cvtColor(out.get_image(), cv2.COLOR_RGBA2RGB)
+    #     if args.visualize:
+    #         plt.imshow(img)
+    #         plt.show()
+    #     plt.imsave(os.path.join(os.path.join(cfg.OUTPUT_DIR, 'visualization'), d["file_name"]), img)
+    #
