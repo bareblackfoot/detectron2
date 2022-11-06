@@ -71,7 +71,7 @@ if __name__ == '__main__':
     last_ckpt = ckpts[0]
     print(last_ckpt)
     cfg.MODEL.WEIGHTS = last_ckpt  # model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
-    cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag)
+    cfg.OUTPUT_DIR = os.path.join(cfg.OUTPUT_DIR, args.dataset + "_" + args.tag + "_singlecore")
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     cfg.SOLVER.IMS_PER_BATCH = 16
     cfg.SOLVER.BASE_LR = 0.0005  # pick a good LR
