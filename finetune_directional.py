@@ -140,10 +140,10 @@ if __name__ == '__main__':
     # evaluator = COCOEvaluator(f"{args.dataset}_{args.tag}_val", cfg, False, output_dir="./output/")
     # val_loader = build_detection_test_loader(cfg, f"{args.dataset}_{args.tag}_val")
     # inference_on_dataset(predictor.model, val_loader, evaluator)
-    import yaml
-    cfg_file = yaml.safe_load(cfg.dump())
-    with open('configs/mp3d_directional.yaml', 'w') as f:
-        yaml.dump(cfg_file, f)
+    # import yaml
+    # cfg_file = yaml.safe_load(cfg.dump())
+    # with open('configs/mp3d_directional.yaml', 'w') as f:
+    #     yaml.dump(cfg_file, f)
 
     """
     Start Finetuning
